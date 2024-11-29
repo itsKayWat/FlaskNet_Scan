@@ -1,0 +1,121 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="dashboard-header">
+        <h1>Dashboard</h1>
+        <div class="dashboard-actions">
+            <button class="btn" onclick="refreshStats()">Refresh</button>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <!-- Server Status Overview -->
+        <div class="card">
+            <h3>Server Status</h3>
+            <div class="stats-container" id="server-status">
+                <div class="stat-item">
+                    <span class="stat-label">Active Servers</span>
+                    <span class="stat-value" id="active-servers">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Total Memory</span>
+                    <span class="stat-value" id="total-memory">0 GB</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">CPU Usage</span>
+                    <span class="stat-value" id="cpu-usage">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="card">
+            <h3>Recent Activity</h3>
+            <div class="activity-list" id="recent-activity">
+                <!-- Activity items will be dynamically inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Performance Charts -->
+    <div class="charts-grid">
+        <div class="card">
+            <h3>CPU Usage History</h3>
+            <canvas id="cpuChart"></canvas>
+        </div>
+        <div class="card">
+            <h3>Memory Usage History</h3>
+            <canvas id="memoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions card">
+        <h3>Quick Actions</h3>
+        <div class="action-buttons">
+            <button class="btn" onclick="serverManager.startAllServers()">Start All</button>
+            <button class="btn btn-secondary" onclick="serverManager.stopAllServers()">Stop All</button>
+            <button class="btn" onclick="serverManager.checkUpdates()">Check Updates</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dashboard = new Dashboard();
+    dashboard.initialize();
+});
+
+class Dashboard {
+    initialize() {
+        this.initializeWebSocket();
+        this.loadInitialData();
+        this.setupRefreshInterval();
+    }
+
+    initializeWebSocket() {
+        socket.on('stats_update', (data) => {
+            this.updateStats(data);
+        });
+
+        socket.on('activity_update', (data) => {
+            this.updateActivity(data);
+        });
+    }
+
+    async loadInitialData() {
+        try {
+            const response = await fetch('/api/monitoring/system');
+            const data = await response.json();
+            this.updateStats(data);
+        } catch (error) {
+            console.error('Failed to load initial data:', error);
+        }
+    }
+
+    setupRefreshInterval() {
+        setInterval(() => this.loadInitialData(), 30000); // Refresh every 30 seconds
+    }
+
+    updateStats(data) {
+        document.getElementById('active-servers').textContent = data.activeServers || 0;
+        document.getElementById('total-memory').textContent = 
+            `${Math.round(data.memory.total / (1024 * 1024 * 1024))} GB`;
+        document.getElementById('cpu-usage').textContent = `${data.cpu.percent}%`;
+    }
+
+    updateActivity(activities) {
+        const activityList = document.getElementById('recent-activity');
+        activityList.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <span class="activity-time">${new Date(activity.timestamp).toLocaleTimeString()}</span>
+                <span class="activity-description">${activity.description}</span>
+            </div>
+        `).join('');
+    }
+}
+</script>
+{% endblock %}
