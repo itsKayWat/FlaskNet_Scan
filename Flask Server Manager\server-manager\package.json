@@ -1,0 +1,20 @@
+{
+  "name": "server-manager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@vue/test-utils": "^2.4.6",
+    "cypress": "^13.16.0",
+    "jest": "^29.7.0"
+  }
+}
