@@ -1,0 +1,202 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="servers-page">
+    <div class="servers-header">
+        <h1>Servers Management</h1>
+        <button class="btn" onclick="showAddServerModal()">Add New Server</button>
+    </div>
+
+    <div class="servers-grid" id="servers-list">
+        <!-- Server cards will be dynamically inserted here -->
+    </div>
+
+    <!-- Add Server Modal -->
+    <div class="modal" id="add-server-modal">
+        <div class="modal-content">
+            <h2>Add New Server</h2>
+            <form id="add-server-form">
+                <div class="form-group">
+                    <label for="server-name">Server Name</label>
+                    <input type="text" id="server-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="server-host">Host</label>
+                    <input type="text" id="server-host" required>
+                </div>
+                <div class="form-group">
+                    <label for="server-port">Port</label>
+                    <input type="number" id="server-port" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn">Add Server</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideAddServerModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<template id="server-card-template">
+    <div class="server-card card">
+        <div class="server-header">
+            <h3 class="server-name"></h3>
+            <span class="server-status"></span>
+        </div>
+        <div class="server-info">
+            <div class="info-item">
+                <span class="label">Host:</span>
+                <span class="host-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="label">Port:</span>
+                <span class="port-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="label">Uptime:</span>
+                <span class="uptime-value"></span>
+            </div>
+        </div>
+        <div class="server-stats">
+            <div class="stat-item">
+                <span class="label">CPU</span>
+                <span class="cpu-value"></span>
+            </div>
+            <div class="stat-item">
+                <span class="label">Memory</span>
+                <span class="memory-value"></span>
+            </div>
+        </div>
+        <div class="server-actions">
+            <button class="btn start-btn">Start</button>
+            <button class="btn stop-btn">Stop</button>
+            <button class="btn btn-secondary restart-btn">Restart</button>
+            <button class="btn btn-secondary settings-btn">Settings</button>
+        </div>
+    </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class ServersManager {
+    constructor() {
+        this.servers = [];
+        this.initialize();
+    }
+
+    async initialize() {
+        await this.loadServers();
+        this.initializeWebSocket();
+        this.setupEventListeners();
+    }
+
+    async loadServers() {
+        try {
+            const response = await fetch('/api/server/list');
+            const data = await response.json();
+            this.servers = data.servers;
+            this.renderServers();
+        } catch (error) {
+            console.error('Failed to load servers:', error);
+            serverManager.showNotification('Failed to load servers', 'error');
+        }
+    }
+
+    initializeWebSocket() {
+        socket.on('server_status_update', (data) => {
+            this.updateServerStatus(data);
+        });
+    }
+
+    setupEventListeners() {
+        const addServerForm = document.getElementById('add-server-form');
+        addServerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.addServer();
+        });
+    }
+
+    renderServers() {
+        const serversList = document.getElementById('servers-list');
+        serversList.innerHTML = '';
+        const template = document.getElementById('server-card-template');
+
+        this.servers.forEach(server => {
+            const serverCard = template.content.cloneNode(true);
+            
+            // Set server information
+            serverCard.querySelector('.server-name').textContent = server.name;
+            serverCard.querySelector('.server-status').textContent = server.status;
+            serverCard.querySelector('.host-value').textContent = server.host;
+            serverCard.querySelector('.port-value').textContent = server.port;
+            
+            // Add event listeners
+            serverCard.querySelector('.start-btn').addEventListener('click', () => 
+                this.controlServer(server.id, 'start'));
+            serverCard.querySelector('.stop-btn').addEventListener('click', () => 
+                this.controlServer(server.id, 'stop'));
+            serverCard.querySelector('.restart-btn').addEventListener('click', () => 
+                this.controlServer(server.id, 'restart'));
+            
+            serversList.appendChild(serverCard);
+        });
+    }
+
+    async controlServer(serverId, action) {
+        try {
+            const response = await fetch(`/api/server/${serverId}/${action}`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            serverManager.showNotification(data.message, 'success');
+        } catch (error) {
+            serverManager.showNotification(`Failed to ${action} server`, 'error');
+        }
+    }
+
+    updateServerStatus(data) {
+        const serverCard = document.querySelector(`[data-server-id="${data.serverId}"]`);
+        if (serverCard) {
+            serverCard.querySelector('.server-status').textContent = data.status;
+            serverCard.querySelector('.cpu-value').textContent = `${data.cpu}%`;
+            serverCard.querySelector('.memory-value').textContent = `${data.memory}%`;
+        }
+    }
+
+    async addServer() {
+        const formData = {
+            name: document.getElementById('server-name').value,
+            host: document.getElementById('server-host').value,
+            port: document.getElementById('server-port').value
+        };
+
+        try {
+            const response = await fetch('/api/server/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            });
+            const data = await response.json();
+            
+            if (response.ok) {
+                serverManager.showNotification('Server added successfully', 'success');
+                hideAddServerModal();
+                await this.loadServers();
+            } else {
+                throw new Error(data.error);
+            }
+        } catch (error) {
+            serverManager.showNotification(error.message, 'error');
+        }
+    }
+}
+
+// Initialize Servers Manager
+document.addEventListener('DOMContentLoaded', () => {
+    window.serversManager = new ServersManager();
+});
+</script>
+{% endblock %}
