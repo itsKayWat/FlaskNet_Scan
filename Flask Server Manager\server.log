@@ -1,0 +1,46 @@
+2024-11-28 11:42:27,302 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on https://127.0.0.1:5000
+2024-11-28 11:42:27,303 - INFO - [33mPress CTRL+C to quit[0m
+2024-11-28 11:42:27,305 - INFO -  * Restarting with stat
+2024-11-28 11:42:27,565 - WARNING -  * Debugger is active!
+2024-11-28 11:42:27,568 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:04:56,160 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\gunicorn_config.py', reloading
+2024-11-28 12:04:56,223 - INFO -  * Restarting with stat
+2024-11-28 12:04:56,547 - WARNING -  * Debugger is active!
+2024-11-28 12:04:56,551 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:16:31,848 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\app\\security\\middleware.py', reloading
+2024-11-28 12:16:31,892 - INFO -  * Restarting with stat
+2024-11-28 12:16:32,171 - WARNING -  * Debugger is active!
+2024-11-28 12:16:32,175 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:17:43,509 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\app\\security\\auth_service.py', reloading
+2024-11-28 12:17:43,547 - INFO -  * Restarting with stat
+2024-11-28 12:17:43,805 - WARNING -  * Debugger is active!
+2024-11-28 12:17:43,809 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:17:51,920 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\app\\monitoring\\service.py', reloading
+2024-11-28 12:17:51,963 - INFO -  * Restarting with stat
+2024-11-28 12:17:52,231 - WARNING -  * Debugger is active!
+2024-11-28 12:17:52,235 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:23:31,566 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\app\\api\\server_endpoints.py', reloading
+2024-11-28 12:23:31,607 - INFO -  * Restarting with stat
+2024-11-28 12:23:31,864 - WARNING -  * Debugger is active!
+2024-11-28 12:23:31,866 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:28:32,075 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\tests\\test_server_api.py', reloading
+2024-11-28 12:28:32,117 - INFO -  * Restarting with stat
+2024-11-28 12:28:32,370 - WARNING -  * Debugger is active!
+2024-11-28 12:28:32,373 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:28:42,506 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\tests\\test_integration.py', reloading
+2024-11-28 12:28:42,547 - INFO -  * Restarting with stat
+2024-11-28 12:28:42,810 - WARNING -  * Debugger is active!
+2024-11-28 12:28:42,813 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:29:04,001 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\tests\\test_performance.py', reloading
+2024-11-28 12:29:04,040 - INFO -  * Restarting with stat
+2024-11-28 12:29:04,316 - WARNING -  * Debugger is active!
+2024-11-28 12:29:04,320 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:38:39,793 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\app\\security\\oauth.py', reloading
+2024-11-28 12:38:39,836 - INFO -  * Restarting with stat
+2024-11-28 12:38:40,103 - WARNING -  * Debugger is active!
+2024-11-28 12:38:40,106 - INFO -  * Debugger PIN: 245-398-670
+2024-11-28 12:38:50,302 - INFO -  * Detected change in 'c:\\Users\\xlkay\\OneDrive\\Desktop\\Flask Server Manager\\app\\security\\waf.py', reloading
+2024-11-28 12:38:50,348 - INFO -  * Restarting with stat
+2024-11-28 12:38:50,611 - WARNING -  * Debugger is active!
+2024-11-28 12:38:50,614 - INFO -  * Debugger PIN: 245-398-670
