@@ -1,0 +1,10 @@
+{
+  "name": "server-manager",
+  "version": "1.0.0",
+  "scripts": {
+    "serve": "python app.py"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
