@@ -1,0 +1,312 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="monitoring-page" id="monitoring-dashboard">
+    <div class="monitoring-header">
+        <h1>System Monitoring</h1>
+        <div class="monitoring-controls">
+            <select id="refresh-interval">
+                <option value="5000">5 seconds</option>
+                <option value="10000">10 seconds</option>
+                <option value="30000">30 seconds</option>
+            </select>
+            <button class="btn" onclick="monitoring.togglePause()">
+                <span id="pause-text">Pause</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Real-time System Stats -->
+    <div class="stats-grid">
+        <div class="card">
+            <h3>CPU Usage</h3>
+            <div class="chart-container">
+                <canvas id="cpuChart"></canvas>
+            </div>
+            <div class="stats-details">
+                <div class="stat-item">
+                    <span class="label">Current:</span>
+                    <span id="cpu-current">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Average:</span>
+                    <span id="cpu-average">0%</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Peak:</span>
+                    <span id="cpu-peak">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Memory Usage</h3>
+            <div class="chart-container">
+                <canvas id="memoryChart"></canvas>
+            </div>
+            <div class="stats-details">
+                <div class="stat-item">
+                    <span class="label">Used:</span>
+                    <span id="memory-used">0 GB</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Available:</span>
+                    <span id="memory-available">0 GB</span>
+                </div>
+                <div class="stat-item">
+                    <span class="label">Total:</span>
+                    <span id="memory-total">0 GB</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Server Processes -->
+    <div class="card">
+        <h3>Active Processes</h3>
+        <div class="table-container">
+            <table class="table" id="processes-table">
+                <thead>
+                    <tr>
+                        <th>PID</th>
+                        <th>Name</th>
+                        <th>CPU %</th>
+                        <th>Memory %</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Processes will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- System Logs -->
+    <div class="card">
+        <h3>System Logs</h3>
+        <div class="logs-controls">
+            <select id="log-level">
+                <option value="ALL">All Levels</option>
+                <option value="ERROR">Errors</option>
+                <option value="WARNING">Warnings</option>
+                <option value="INFO">Info</option>
+            </select>
+            <input type="text" id="log-search" placeholder="Search logs...">
+        </div>
+        <div class="logs-container" id="system-logs">
+            <!-- Logs will be dynamically inserted here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+class MonitoringSystem {
+    constructor() {
+        this.isPaused = false;
+        this.charts = {};
+        this.stats = {
+            cpu: {
+                current: 0,
+                average: 0,
+                peak: 0,
+                history: []
+            },
+            memory: {
+                used: 0,
+                available: 0,
+                total: 0,
+                history: []
+            }
+        };
+        this.initialize();
+    }
+
+    initialize() {
+        this.initializeCharts();
+        this.initializeWebSocket();
+        this.setupEventListeners();
+        this.startMonitoring();
+    }
+
+    initializeCharts() {
+        // CPU Chart
+        const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+        this.charts.cpu = new Chart(cpuCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'CPU Usage %',
+                    data: [],
+                    borderColor: '#bb86fc',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                animation: {
+                    duration: 0
+                }
+            }
+        });
+
+        // Memory Chart
+        const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+        this.charts.memory = new Chart(memoryCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Memory Usage %',
+                    data: [],
+                    borderColor: '#03dac6',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                animation: {
+                    duration: 0
+                }
+            }
+        });
+    }
+
+    initializeWebSocket() {
+        socket.on('stats_update', (data) => {
+            if (!this.isPaused) {
+                this.updateStats(data);
+            }
+        });
+
+        socket.on('process_update', (data) => {
+            if (!this.isPaused) {
+                this.updateProcesses(data);
+            }
+        });
+
+        socket.on('log_update', (data) => {
+            if (!this.isPaused) {
+                this.updateLogs(data);
+            }
+        });
+    }
+
+    setupEventListeners() {
+        document.getElementById('refresh-interval').addEventListener('change', (e) => {
+            this.updateRefreshInterval(parseInt(e.target.value));
+        });
+
+        document.getElementById('log-level').addEventListener('change', (e) => {
+            this.filterLogs(e.target.value);
+        });
+
+        document.getElementById('log-search').addEventListener('input', (e) => {
+            this.searchLogs(e.target.value);
+        });
+    }
+
+    updateStats(data) {
+        // Update CPU stats
+        this.stats.cpu.current = data.cpu.percent;
+        this.stats.cpu.history.push(data.cpu.percent);
+        if (this.stats.cpu.history.length > 60) {
+            this.stats.cpu.history.shift();
+        }
+        this.stats.cpu.average = this.calculateAverage(this.stats.cpu.history);
+        this.stats.cpu.peak = Math.max(...this.stats.cpu.history);
+
+        // Update Memory stats
+        const memoryUsed = data.memory.total - data.memory.available;
+        const memoryPercent = (memoryUsed / data.memory.total) * 100;
+        this.stats.memory.history.push(memoryPercent);
+        if (this.stats.memory.history.length > 60) {
+            this.stats.memory.history.shift();
+        }
+
+        // Update UI
+        this.updateCharts();
+        this.updateStatsDisplay();
+    }
+
+    updateCharts() {
+        const timestamp = new Date().toLocaleTimeString();
+
+        // Update CPU chart
+        this.charts.cpu.data.labels.push(timestamp);
+        this.charts.cpu.data.datasets[0].data.push(this.stats.cpu.current);
+        if (this.charts.cpu.data.labels.length > 60) {
+            this.charts.cpu.data.labels.shift();
+            this.charts.cpu.data.datasets[0].data.shift();
+        }
+        this.charts.cpu.update();
+
+        // Update Memory chart
+        this.charts.memory.data.labels.push(timestamp);
+        this.charts.memory.data.datasets[0].data.push(this.stats.memory.history[this.stats.memory.history.length - 1]);
+        if (this.charts.memory.data.labels.length > 60) {
+            this.charts.memory.data.labels.shift();
+            this.charts.memory.data.datasets[0].data.shift();
+        }
+        this.charts.memory.update();
+    }
+
+    updateStatsDisplay() {
+        // Update CPU display
+        document.getElementById('cpu-current').textContent = `${this.stats.cpu.current}%`;
+        document.getElementById('cpu-average').textContent = `${this.stats.cpu.average.toFixed(1)}%`;
+        document.getElementById('cpu-peak').textContent = `${this.stats.cpu.peak}%`;
+
+        // Update Memory display
+        document.getElementById('memory-used').textContent = `${this.formatBytes(this.stats.memory.used)}`;
+        document.getElementById('memory-available').textContent = `${this.formatBytes(this.stats.memory.available)}`;
+        document.getElementById('memory-total').textContent = `${this.formatBytes(this.stats.memory.total)}`;
+    }
+
+    calculateAverage(array) {
+        return array.reduce((a, b) => a + b, 0) / array.length;
+    }
+
+    formatBytes(bytes) {
+        const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        let size = bytes;
+        let unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+        return `${size.toFixed(2)} ${units[unitIndex]}`;
+    }
+
+    togglePause() {
+        this.isPaused = !this.isPaused;
+        document.getElementById('pause-text').textContent = this.isPaused ? 'Resume' : 'Pause';
+    }
+}
+
+// Initialize monitoring system
+document.addEventListener('DOMContentLoaded', () => {
+    window.monitoring = new MonitoringSystem();
+});
+</script>
+{% endblock %}
