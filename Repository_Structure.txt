@@ -1,0 +1,33 @@
+FlaskNetScan/
+├── app/
+│   ├── api/
+│   ├── monitoring/
+│   ├── security/
+│   ├── static/
+│   │   ├── css/
+│   │   ├── js/
+│   │   └── images/
+│   └── templates/
+├── deployment/
+│   └── kubernetes/
+├── docs/
+├── tests/
+├── uploads/
+├── requirements.txt
+├── run.py
+├── config.py
+├── Dockerfile
+├── docker-compose.yml
+└── README.md
+
+Key Directories:
+- app/: Core application code
+- api/: API endpoints and routes
+- monitoring/: System monitoring modules
+- security/: Security and authentication
+- static/: Frontend assets
+- templates/: HTML templates
+- deployment/: Deployment configurations
+- docs/: Documentation
+- tests/: Test suites
+- uploads/: File upload directory
